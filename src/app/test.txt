@@ -1,0 +1,20 @@
+RATE (PSF)	Actual PSF	Actual Agreement value( but not taking into consideration)	Agreement Value	"- T.D.S 1% OF 
+Agreement 
+Value"	"T.D.S As per Due 
+- 20%"	"Due 
+ (As Per Milestone)
+ 9.9%"	"Due 
+ (As Per Milestone)
+ 10.10%"	"Amount 
+ Recd. till Date"	"Balance
+  (As per Due)"	Due Amount Excluding T.D.S	"Balance 
+ (100%)"	"Total 
+ G.S.T 
+ @12 %"	"Due 
+ As Milestone (%)"	"G.S.T. Recd.
+  (Till Date)"	"Balance 
+ (As per Due)"	"Balance 
+ (As per 100%)"	"Stamp duty
+  (@ 6%)"	Registration Charges	TOTAL	"Total
+ (Stampduty + Reg.)"	Amount Recd.	Total Amount Received Till Date 
+28000	29960	13493085	12047398	120474	24095	1192692	1216787	100000	2309480	2285385	11947398	1445688	289138	0	289138	1445688	722844	30000	752844	752900		100000
