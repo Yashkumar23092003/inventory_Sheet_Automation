@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
       body.totalSqm      ?? "",   // Total Unit Area Sq. Mt.
       body.totalSqft     ?? "",   // Total Unit Area Sq. Ft.
       body.soldUnsold    ?? "",   // Sold / Unsold
-      body.unitNo        ?? "",   // Unit No. (repeated per header)
       body.dateOfBooking ?? "",   // Date of Booking
       body.applicant1  ?? "",   // Applicants Name
       body.applicant2  ?? "",   // Co-Applicant's Name

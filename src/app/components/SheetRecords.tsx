@@ -2,29 +2,28 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-// Column indices (0-based) for the 61-column sheet layout.
+// Column indices (0-based) for the 60-column sheet layout.
 const COL = {
   unitType: 1,
   unitNo: 2,
-  altUnitNo: 9,
   soldUnsold: 8,
   totalSqft: 7,
-  applicant: 11,
-  pan: 21,
-  aadhar: 22,
-  agreementValue: 26, // AA
+  applicant: 10,
+  pan: 20,
+  aadhar: 21,
+  agreementValue: 25, // AA
 };
 
 // Section boundaries [startCol, endColInclusive, title]
 const SECTIONS: [number, number, string][] = [
-  [0, 10, "Unit Information"],
-  [11, 22, "Applicant & Contact"],
-  [23, 34, "Agreement Value, TDS & Payments"],
-  [35, 39, "GST"],
-  [40, 43, "Stamp Duty & Registration"],
-  [44, 48, "Other Payments"],
-  [49, 55, "Parking"],
-  [56, 60, "Share Certificate"],
+  [0, 9, "Unit Information"],
+  [10, 21, "Applicant & Contact"],
+  [22, 33, "Agreement Value, TDS & Payments"],
+  [34, 38, "GST"],
+  [39, 42, "Stamp Duty & Registration"],
+  [43, 47, "Other Payments"],
+  [48, 54, "Parking"],
+  [55, 59, "Share Certificate"],
 ];
 
 interface SheetResponse {
@@ -110,16 +109,12 @@ export default function SheetRecords() {
     const q = search.trim().toLowerCase();
     const indexed = rows.map((row, i) => ({ row, i }));
     if (!q) return indexed;
-    return indexed.filter(({ row }) => {
-      const a = (row[COL.unitNo] ?? "").toLowerCase();
-      const b = (row[COL.altUnitNo] ?? "").toLowerCase();
-      return a.includes(q) || b.includes(q);
-    });
+    return indexed.filter(({ row }) => (row[COL.unitNo] ?? "").toLowerCase().includes(q));
   }, [rows, search]);
 
   const cell = (row: string[], i: number) => (row[i] ?? "").toString();
   const unitLabel = (row: string[]) =>
-    cell(row, COL.unitNo) || cell(row, COL.altUnitNo) || "(no unit no.)";
+    cell(row, COL.unitNo) || "(no unit no.)";
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">

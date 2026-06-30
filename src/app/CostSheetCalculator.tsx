@@ -26,7 +26,7 @@ const UNIT_CONFIGS = {
     loadingFactor: 0.13,   // Y = X * 1.13
     aaDivisor: 0.18,
     divisorCents: 118,      // (1 + 0.18) * 100 as exact integer — avoids float drift in AA
-    gstRate: 0.18,          // AJ = AA * 18%
+    gstRate: 0.12,          // AJ = AA * 12% (verified against real Office unit 313)
     abRate: 0.01,
     acRate: 0.20,
     adRate: 0.099,
@@ -40,10 +40,6 @@ type UnitType = keyof typeof UNIT_CONFIGS;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** sqm → sqft: multiply by 10.764, round to 2 decimal places */
-function sqmToSqft(sqm: number): number {
-  return Math.round(sqm * SQM_TO_SQFT * 100) / 100;
-}
 
 /** Excel CEILING — always rounds UP to next multiple of `significance` */
 function ceiling(value: number, significance: number): number {
@@ -106,12 +102,13 @@ function calculate(
   unitType: UnitType,
   AP: number,
   AL: number,
-  AF: number
+  AF: number,
+  gstRate: number   // selectable: 0.12 or 0.18 — independent of unit type
 ): CalcResult {
   const cfg = UNIT_CONFIGS[unitType];
 
   const H_sqm = unitSqm + balconySqm;
-  const H_sqft = sqmToSqft(H_sqm);           // ROUND(sqm × 10.764, 2)
+  const H_sqft = Math.round(H_sqm * SQM_TO_SQFT);   // ROUND(sqm × 10.764, 0) — whole sqft before multiplying
 
   // Math.round prevents float drift (e.g. 28000 * 1.13 = 31639.9999... in IEEE 754)
   const Y = Math.round(X * (1 + cfg.loadingFactor));
@@ -126,7 +123,7 @@ function calculate(
   const AC = Math.round(AB * cfg.acRate);     // ROUND(AB×20%, 0)
   const AD = AA * cfg.adRate;
   const AE = AA * cfg.aeRate;
-  const AJ = AA * cfg.gstRate;
+  const AJ = AA * gstRate;                    // GST at the selected rate (12% or 18%)
   const AK = Math.round(AJ * cfg.akRate);     // ROUND(AJ×20%, 0)
   const AO = Math.round(AA * cfg.aoRate);
   const AQ = AO + AP;
@@ -204,6 +201,7 @@ export default function CostSheetCalculator() {
   const [balconySqm, setBalconySqm]   = useState<string>("0");
   const [ratePSF, setRatePSF]         = useState<string>("");
   const [unitType, setUnitType]       = useState<UnitType>("shop");
+  const [gstPctChoice, setGstPctChoice] = useState<"12" | "18">("12");
   const [regCharges, setRegCharges]   = useState<string>("30000");
   const [amtReceived, setAmtReceived] = useState<string>("0");
   const [gstReceived, setGstReceived] = useState<string>("0");
@@ -214,14 +212,15 @@ export default function CostSheetCalculator() {
   const AP   = parseFloat(regCharges)   || 0;
   const AF   = parseFloat(amtReceived)  || 0;
   const AL   = parseFloat(gstReceived)  || 0;
+  const gstRate = parseInt(gstPctChoice, 10) / 100;   // 0.12 or 0.18
 
   const result = useMemo(
-    () => calculate(uSqm, bSqm, X, unitType, AP, AL, AF),
-    [uSqm, bSqm, X, unitType, AP, AL, AF]
+    () => calculate(uSqm, bSqm, X, unitType, AP, AL, AF, gstRate),
+    [uSqm, bSqm, X, unitType, AP, AL, AF, gstRate]
   );
 
   const cfg     = UNIT_CONFIGS[unitType];
-  const gstPct  = `${cfg.gstRate * 100}%`;
+  const gstPct  = `${gstPctChoice}%`;
   const loadPct = `${cfg.loadingFactor * 100}%`;
   const divPct  = `${cfg.aaDivisor * 100}%`;
 
@@ -279,7 +278,7 @@ export default function CostSheetCalculator() {
       code: "H",
       label: "Unit Area (Sq. Ft.)",
       value: result.H_sqft,
-      formula: `ROUND(${fmt2(result.H_sqm)} sqm × 10.764, 2)`,
+      formula: `ROUND(${fmt2(result.H_sqm)} sqm × 10.764, 0)`,
     },
     {
       code: "Y",
@@ -532,6 +531,21 @@ export default function CostSheetCalculator() {
             />
           </div>
 
+          {/* GST Rate */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              GST Rate
+            </label>
+            <select
+              value={gstPctChoice}
+              onChange={(e) => setGstPctChoice(e.target.value as "12" | "18")}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="12">12% (×1.12)</option>
+              <option value="18">18% (×1.18)</option>
+            </select>
+          </div>
+
           {/* Registration Charges */}
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -581,12 +595,12 @@ export default function CostSheetCalculator() {
             </label>
             <div className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-700 font-semibold">
               {result.H_sqft > 0
-                ? `${result.H_sqft.toFixed(2)} sq ft`
+                ? `${result.H_sqft.toLocaleString("en-IN")} sq ft`
                 : <span className="text-gray-400 font-normal">–</span>}
             </div>
             {result.H_sqm > 0 && (
               <p className="text-xs text-gray-400 mt-0.5">
-                ROUND({fmt2(result.H_sqm)} × 10.764, 2)
+                ROUND({fmt2(result.H_sqm)} × 10.764, 0)
               </p>
             )}
           </div>

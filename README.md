@@ -81,7 +81,7 @@ flowchart LR
 |---|---|---|
 | Loading factor | +7% | +13% |
 | AA divisor | ÷ 1.12 | ÷ 1.18 |
-| GST rate | 12% | 18% |
+| GST rate | 12% | 12% |
 | Stamp duty | 6% | 6% |
 
 > ✅ Verified against the source Excel with **8.5 million fuzz assertions** — zero mismatches.
